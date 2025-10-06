@@ -175,12 +175,14 @@ export default function AdminBitsPage() {
         <Heading color="white" heading1="Admin" heading2="Bits" subheading="Manage your CNC bits" />
       </div>
       <div className="flex justify-between mb-4">
-        <div><div className="flex text-white items-center gap-2">
+        <div>
+            {/* <div className="flex text-white items-center gap-2">
           <span className="font-bold">Spindle:</span> {sessionStorage.getItem("spindle_name")}
         </div>
         <div className="flex text-white items-center gap-2">
           <span className="font-bold">Material:</span> {sessionStorage.getItem("material_name")}
-        </div></div>
+        </div> */}
+        </div>
         
         <Button onClick={openCreate} className="bg-teal-600 hover:bg-teal-700 text-white">Add Bit</Button>
       </div>

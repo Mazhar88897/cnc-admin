@@ -164,7 +164,7 @@ export default function AdminMaterialsPage() {
       </div>
       <div className="flex justify-between mb-4">
         <div className="flex text-white items-center gap-2">
-          <span className="font-bold">Spindle:</span> {sessionStorage.getItem("spindle_name")}
+          {/* <span className="font-bold">Spindle:</span> {sessionStorage.getItem("spindle_name")} */}
         </div>
         <Button onClick={openCreate} className="bg-teal-600 hover:bg-teal-700 text-white">Add Material</Button>
       </div>

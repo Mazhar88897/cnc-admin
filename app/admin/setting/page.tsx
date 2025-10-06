@@ -7,6 +7,7 @@ import { Eye, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import ConfirmationModal from "@/components/dashboardItems/confirmationModal"
 
 type Setting = {
@@ -25,8 +26,28 @@ type Setting = {
   warning: string | null
 }
 
+type Spindle = {
+  id: number
+  name: string
+}
+
+type Bit = {
+  id: number
+  name: string
+  bit_dia_for_calc: number
+  stepover_ratio: number
+}
+
+type Material = {
+  id: number
+  name: string
+}
+
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<Setting[]>([])
+  const [spindles, setSpindles] = useState<Spindle[]>([])
+  const [bits, setBits] = useState<Bit[]>([])
+  const [materials, setMaterials] = useState<Material[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
   const [viewOpen, setViewOpen] = useState<boolean>(false)
@@ -34,6 +55,11 @@ export default function AdminSettingsPage() {
   const [formOpen, setFormOpen] = useState<boolean>(false)
   const [formMode, setFormMode] = useState<"create" | "edit">("create")
   const [formId, setFormId] = useState<number | null>(null)
+
+  // dropdown selections
+  const [selectedSpindleId, setSelectedSpindleId] = useState<string>("")
+  const [selectedBitId, setSelectedBitId] = useState<string>("")
+  const [selectedMaterialId, setSelectedMaterialId] = useState<string>("")
 
   // numeric fields
   const [rpm, setRpm] = useState<string>("")
@@ -51,23 +77,53 @@ export default function AdminSettingsPage() {
   const getToken = () => (typeof window !== "undefined" ? sessionStorage.getItem("Authorization") : null)
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchData = async () => {
       try {
         const token = getToken()
-        const response = await fetch(`${baseUrl}/admin/cnc/settings`, {
-          headers: { Authorization: token || "" },
-          cache: "no-store",
-        })
-        if (!response.ok) throw new Error(`Failed to load settings (${response.status})`)
-        const data: Setting[] = await response.json()
-        setSettings(data)
+        
+        // Fetch all data in parallel
+        const [settingsRes, spindlesRes, bitsRes, materialsRes] = await Promise.all([
+          fetch(`${baseUrl}/admin/cnc/settings`, {
+            headers: { Authorization: token || "" },
+            cache: "no-store",
+          }),
+          fetch(`${baseUrl}/admin/cnc/spindles`, {
+            headers: { Authorization: token || "" },
+            cache: "no-store",
+          }),
+          fetch(`${baseUrl}/admin/cnc/bits`, {
+            headers: { Authorization: token || "" },
+            cache: "no-store",
+          }),
+          fetch(`${baseUrl}/admin/cnc/materials`, {
+            headers: { Authorization: token || "" },
+            cache: "no-store",
+          })
+        ])
+
+        if (!settingsRes.ok) throw new Error(`Failed to load settings (${settingsRes.status})`)
+        if (!spindlesRes.ok) throw new Error(`Failed to load spindles (${spindlesRes.status})`)
+        if (!bitsRes.ok) throw new Error(`Failed to load bits (${bitsRes.status})`)
+        if (!materialsRes.ok) throw new Error(`Failed to load materials (${materialsRes.status})`)
+
+        const [settingsData, spindlesData, bitsData, materialsData] = await Promise.all([
+          settingsRes.json(),
+          spindlesRes.json(),
+          bitsRes.json(),
+          materialsRes.json()
+        ])
+
+        setSettings(settingsData)
+        setSpindles(spindlesData)
+        setBits(bitsData)
+        setMaterials(materialsData)
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load settings")
+        setError(err instanceof Error ? err.message : "Failed to load data")
       } finally {
         setIsLoading(false)
       }
     }
-    fetchSettings()
+    fetchData()
   }, [baseUrl])
 
   const handleView = async (id: number) => {
@@ -89,6 +145,9 @@ export default function AdminSettingsPage() {
   const openCreate = () => {
     setFormMode("create")
     setFormId(null)
+    setSelectedSpindleId("")
+    setSelectedBitId("")
+    setSelectedMaterialId("")
     setRpm("")
     setFeed("")
     setDoc("")
@@ -120,9 +179,31 @@ export default function AdminSettingsPage() {
   const submitForm = async () => {
     try {
       const token = getToken()
-      const spindleId = typeof window !== "undefined" ? Number(sessionStorage.getItem("spindle_id") || 0) : 0
-      const materialId = typeof window !== "undefined" ? Number(sessionStorage.getItem("material_id") || 0) : 0
-      const bitId = typeof window !== "undefined" ? Number(sessionStorage.getItem("bit_id") || 0) : 0
+      const isEdit = formMode === "edit" && formId !== null
+
+      // Validate dropdown selections for create mode
+      if (!isEdit) {
+        if (!selectedSpindleId || !selectedMaterialId || !selectedBitId) {
+          setError("Please select Spindle, Material, and Bit before creating a setting")
+          return
+        }
+      }
+
+      // Use original IDs when editing; use dropdown selection when creating
+      let spindleId: number
+      let materialId: number
+      let bitId: number
+
+      if (isEdit) {
+        const original = settings.find((x) => x.setting_id === formId)
+        spindleId = original ? original.spindle_id : 0
+        materialId = original ? original.material_id : 0
+        bitId = original ? original.bit_id : 0
+      } else {
+        spindleId = Number(selectedSpindleId)
+        materialId = Number(selectedMaterialId)
+        bitId = Number(selectedBitId)
+      }
       const payload = {
         spindle_id: spindleId,
         bit_id: bitId,
@@ -134,7 +215,6 @@ export default function AdminSettingsPage() {
         plunge: Number(plunge),
         warning: warning || null,
       }
-      const isEdit = formMode === "edit" && formId !== null
       const url = isEdit ? `${baseUrl}/admin/cnc/settings/${formId}` : `${baseUrl}/admin/cnc/settings`
       const method = isEdit ? "PUT" : "POST"
       const response = await fetch(url, {
@@ -194,9 +274,9 @@ export default function AdminSettingsPage() {
       </div>
       <div className="flex justify-between mb-4">
         <div>
-          <div className="flex text-white items-center gap-2"><span className="font-bold">Spindle:</span> {spindleName}</div>
+          {/* <div className="flex text-white items-center gap-2"><span className="font-bold">Spindle:</span> {spindleName}</div>
           <div className="flex text-white items-center gap-2"><span className="font-bold">Material:</span> {materialName}</div>
-          <div className="flex text-white items-center gap-2"><span className="font-bold">Bit:</span> {bitName}</div>
+          <div className="flex text-white items-center gap-2"><span className="font-bold">Bit:</span> {bitName}</div> */}
         </div>
         <Button onClick={openCreate} className="bg-teal-600 hover:bg-teal-700 text-white">Add Setting</Button>
       </div>
@@ -283,38 +363,102 @@ export default function AdminSettingsPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="bg-[#004851] border-4 border-[#03BFB5] text-white">
+        <DialogContent className="bg-[#004851] max-h-[90vh] overflow-y-auto border-4 border-[#03BFB5] text-white">
           <DialogHeader>
             <DialogTitle className="text-[#03BFB5]">{formMode === "edit" ? "Edit Setting" : "Add Setting"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label htmlFor="rpm" className="text-white">RPM</Label>
-              <Input id="rpm" type="number" value={rpm} onChange={(e) => setRpm(e.target.value)} placeholder="18000" className="bg-white text-black" />
+            {formMode === "create" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="spindle" className="text-white">Spindle</Label>
+                  <Select value={selectedSpindleId} onValueChange={setSelectedSpindleId}>
+                    <SelectTrigger className="bg-white text-black">
+                      <SelectValue placeholder="Select spindle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {spindles.map((spindle) => (
+                        <SelectItem key={spindle.id} value={String(spindle.id)}>
+                          {spindle.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="material" className="text-white">Material</Label>
+                  <Select value={selectedMaterialId} onValueChange={setSelectedMaterialId}>
+                    <SelectTrigger className="bg-white text-black">
+                      <SelectValue placeholder="Select material" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {materials.map((material) => (
+                        <SelectItem key={material.id} value={String(material.id)}>
+                          {material.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="bit" className="text-white">Bit</Label>
+                  <Select value={selectedBitId} onValueChange={setSelectedBitId}>
+                    <SelectTrigger className="bg-white text-black">
+                      <SelectValue placeholder="Select bit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bits.map((bit) => (
+                        <SelectItem key={bit.id} value={String(bit.id)}>
+                          {bit.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="rpm" className="text-white">RPM</Label>
+                <Input id="rpm" type="number" value={rpm} onChange={(e) => setRpm(e.target.value)} placeholder="18000" className="bg-white text-black" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="feed" className="text-white">Feed</Label>
+                <Input id="feed" type="number" value={feed} onChange={(e) => setFeed(e.target.value)} placeholder="1500" className="bg-white text-black" />
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="feed" className="text-white">Feed</Label>
-              <Input id="feed" type="number" value={feed} onChange={(e) => setFeed(e.target.value)} placeholder="1500" className="bg-white text-black" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="doc" className="text-white">DOC</Label>
+                <Input id="doc" type="number" step="0.01" value={doc} onChange={(e) => setDoc(e.target.value)} placeholder="2.5" className="bg-white text-black" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="stepover" className="text-white">Stepover</Label>
+                <Input id="stepover" type="number" step="0.001" value={stepover} onChange={(e) => setStepover(e.target.value)} placeholder="0.4" className="bg-white text-black" />
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="doc" className="text-white">DOC</Label>
-              <Input id="doc" type="number" step="0.01" value={doc} onChange={(e) => setDoc(e.target.value)} placeholder="2.5" className="bg-white text-black" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="stepover" className="text-white">Stepover</Label>
-              <Input id="stepover" type="number" step="0.001" value={stepover} onChange={(e) => setStepover(e.target.value)} placeholder="0.4" className="bg-white text-black" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="plunge" className="text-white">Plunge</Label>
-              <Input id="plunge" type="number" value={plunge} onChange={(e) => setPlunge(e.target.value)} placeholder="600" className="bg-white text-black" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="warning" className="text-white">Warning</Label>
-              <Input id="warning" value={warning} onChange={(e) => setWarning(e.target.value)} placeholder="Use proper safety equipment" className="bg-white text-black" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="plunge" className="text-white">Plunge</Label>
+                <Input id="plunge" type="number" value={plunge} onChange={(e) => setPlunge(e.target.value)} placeholder="600" className="bg-white text-black" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="warning" className="text-white">Warning</Label>
+                <Input id="warning" value={warning} onChange={(e) => setWarning(e.target.value)} placeholder="Use proper safety equipment" className="bg-white text-black" />
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={submitForm} className="bg-[#03BFB5] hover:bg-[#03BFB5]/80 text-white font-bold">{formMode === "edit" ? "Update" : "Create"}</Button>
+            <Button 
+              onClick={submitForm} 
+              disabled={formMode === "create" && (!selectedSpindleId || !selectedMaterialId || !selectedBitId)}
+              className="bg-[#03BFB5] hover:bg-[#03BFB5]/80 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {formMode === "edit" ? "Update" : "Create"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
