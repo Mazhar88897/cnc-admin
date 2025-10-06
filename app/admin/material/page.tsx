@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Heading from "@/components/screens/customHeading"
 import { Eye, Pencil, Trash2 } from "lucide-react"
@@ -15,6 +16,7 @@ type Material = {
 }
 
 export default function AdminMaterialsPage() {
+  const router = useRouter()
   const [materials, setMaterials] = useState<Material[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
@@ -147,12 +149,23 @@ export default function AdminMaterialsPage() {
     }
   }
 
+  const goToBits = (material: Material) => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("material_id", String(material.id))
+      sessionStorage.setItem("material_name", material.name)
+    }
+    router.push("/admin/bits")
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
         <Heading color="white" heading1="Admin" heading2="Materials" subheading="Manage your CNC materials" />
       </div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between mb-4">
+        <div className="flex text-white items-center gap-2">
+          <span className="font-bold">Spindle:</span> {sessionStorage.getItem("spindle_name")}
+        </div>
         <Button onClick={openCreate} className="bg-teal-600 hover:bg-teal-700 text-white">Add Material</Button>
       </div>
 
@@ -175,7 +188,7 @@ export default function AdminMaterialsPage() {
               {sortedMaterials.map((m, idx) => (
                 <tr key={m.id} className="border-t">
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 font-bold">{m.name}</td>
+                  <td className="px-4 py-3 font-bold cursor-pointer hover:underline" onClick={() => goToBits(m)}>{m.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-4 justify-end">
                       <button aria-label="View" className="hover:opacity-80" onClick={() => handleView(m.id)}>
@@ -197,7 +210,7 @@ export default function AdminMaterialsPage() {
       )}
 
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="bg[#004851] border-4 border-[#03BFB5] text-white">
+        <DialogContent className="bg-[#004851] border-4 border-[#03BFB5] text-white">
           <DialogHeader>
             <DialogTitle className="text-[#03BFB5]">Material Details</DialogTitle>
           </DialogHeader>

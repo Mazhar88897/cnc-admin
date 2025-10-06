@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Heading from "@/components/screens/customHeading"
 import { Eye, Pencil, Trash2 } from "lucide-react"
@@ -15,6 +16,7 @@ type Spindle = {
 }
 
 export default function AdminSpindlesPage() {
+  const router = useRouter()
   const [spindles, setSpindles] = useState<Spindle[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
@@ -147,6 +149,14 @@ export default function AdminSpindlesPage() {
     }
   }
 
+  const goToMaterial = (spindle: Spindle) => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("spindle_id", String(spindle.id))
+      sessionStorage.setItem("spindle_name", spindle.name)
+    }
+    router.push("/admin/material")
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -175,7 +185,7 @@ export default function AdminSpindlesPage() {
               {sortedSpindles.map((s, idx) => (
                 <tr key={s.id} className="border-t">
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 font-bold">{s.name}</td>
+                  <td className="px-4 py-3 font-bold cursor-pointer hover:underline" onClick={() => goToMaterial(s)}>{s.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-4 justify-end">
                       <button aria-label="View" className="hover:opacity-80" onClick={() => handleView(s.id)}>

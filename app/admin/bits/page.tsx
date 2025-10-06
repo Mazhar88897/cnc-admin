@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Heading from "@/components/screens/customHeading"
 import { Eye, Pencil, Trash2 } from "lucide-react"
@@ -17,6 +18,7 @@ type Bit = {
 }
 
 export default function AdminBitsPage() {
+  const router = useRouter()
   const [bits, setBits] = useState<Bit[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
@@ -159,12 +161,27 @@ export default function AdminBitsPage() {
     }
   }
 
+  const goToSetting = (bit: Bit) => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("bit_id", String(bit.id))
+      sessionStorage.setItem("bit_name", bit.name)
+    }
+    router.push("/admin/setting")
+  }
+
   return (
     <div className="p-6">
       <div className="mb-6">
         <Heading color="white" heading1="Admin" heading2="Bits" subheading="Manage your CNC bits" />
       </div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between mb-4">
+        <div><div className="flex text-white items-center gap-2">
+          <span className="font-bold">Spindle:</span> {sessionStorage.getItem("spindle_name")}
+        </div>
+        <div className="flex text-white items-center gap-2">
+          <span className="font-bold">Material:</span> {sessionStorage.getItem("material_name")}
+        </div></div>
+        
         <Button onClick={openCreate} className="bg-teal-600 hover:bg-teal-700 text-white">Add Bit</Button>
       </div>
 
@@ -188,10 +205,10 @@ export default function AdminBitsPage() {
             <tbody>
               {sortedBits.map((b, idx) => (
                 <tr key={b.id} className="border-t">
-                  <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 font-bold">{b.name}</td>
-                  <td className="px-4 py-3">{b.bit_dia_for_calc}</td>
-                  <td className="px-4 py-3">{b.stepover_ratio}</td>
+                  <td className="px-4 py-3" onClick={() => goToSetting(b)}>{idx + 1}</td>
+                  <td className="px-4 py-3 font-bold cursor-pointer hover:underline" onClick={() => goToSetting(b)}>{b.name}</td>
+                  <td className="px-4 py-3" onClick={() => goToSetting(b)}>{b.bit_dia_for_calc}</td>
+                  <td className="px-4 py-3" onClick={() => goToSetting(b)}>{b.stepover_ratio}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-4 justify-end">
                       <button aria-label="View" className="hover:opacity-80" onClick={() => handleView(b.id)}>
