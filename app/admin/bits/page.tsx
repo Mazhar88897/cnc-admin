@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Heading from "@/components/screens/customHeading"
 import { Eye, Pencil, Trash2 } from "lucide-react"
@@ -18,7 +18,7 @@ type Bit = {
 }
 
 export default function AdminBitsPage() {
-  const router = useRouter()
+  // const router = useRouter()
   const [bits, setBits] = useState<Bit[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
@@ -166,7 +166,7 @@ export default function AdminBitsPage() {
       sessionStorage.setItem("bit_id", String(bit.id))
       sessionStorage.setItem("bit_name", bit.name)
     }
-    router.push("/admin/setting")
+    // router.push("/admin/setting")
   }
 
   return (
@@ -208,7 +208,7 @@ export default function AdminBitsPage() {
               {sortedBits.map((b, idx) => (
                 <tr key={b.id} className="border-t">
                   <td className="px-4 py-3" onClick={() => goToSetting(b)}>{idx + 1}</td>
-                  <td className="px-4 py-3 font-bold cursor-pointer hover:underline" onClick={() => goToSetting(b)}>{b.name}</td>
+                  <td className="px-4 py-3 font-bold " >{b.name}</td>
                   <td className="px-4 py-3" onClick={() => goToSetting(b)}>{b.bit_dia_for_calc}</td>
                   <td className="px-4 py-3" onClick={() => goToSetting(b)}>{b.stepover_ratio}</td>
                   <td className="px-4 py-3">

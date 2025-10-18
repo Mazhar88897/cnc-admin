@@ -154,7 +154,7 @@ export default function AdminSpindlesPage() {
       sessionStorage.setItem("spindle_id", String(spindle.id))
       sessionStorage.setItem("spindle_name", spindle.name)
     }
-    router.push("/admin/material")
+    router.push("/admin/CSV")
   }
 
   return (
@@ -162,7 +162,8 @@ export default function AdminSpindlesPage() {
       <div className="mb-6">
         <Heading color="white" heading1="Admin" heading2="Spindles" subheading="Manage your CNC spindles" />
       </div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between mb-4">
+        <div className="text-white text-lg font-bold">Click On Spindle Name to view Hard Settings</div>
         <Button onClick={openCreate} className="bg-teal-600 hover:bg-teal-700 text-white">Add Spindle</Button>
       </div>
 

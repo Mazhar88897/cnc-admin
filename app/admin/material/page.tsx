@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import Heading from "@/components/screens/customHeading"
 import { Eye, Pencil, Trash2 } from "lucide-react"
@@ -16,7 +16,7 @@ type Material = {
 }
 
 export default function AdminMaterialsPage() {
-  const router = useRouter()
+  // const router = useRouter()
   const [materials, setMaterials] = useState<Material[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
@@ -154,7 +154,7 @@ export default function AdminMaterialsPage() {
       sessionStorage.setItem("material_id", String(material.id))
       sessionStorage.setItem("material_name", material.name)
     }
-    router.push("/admin/bits")
+    // router.push("/admin/bits")
   }
 
   return (
@@ -188,7 +188,7 @@ export default function AdminMaterialsPage() {
               {sortedMaterials.map((m, idx) => (
                 <tr key={m.id} className="border-t">
                   <td className="px-4 py-3">{idx + 1}</td>
-                  <td className="px-4 py-3 font-bold cursor-pointer hover:underline" onClick={() => goToBits(m)}>{m.name}</td>
+                  <td className="px-4 py-3 font-bold" >{m.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-4 justify-end">
                       <button aria-label="View" className="hover:opacity-80" onClick={() => handleView(m.id)}>
