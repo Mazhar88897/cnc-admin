@@ -616,13 +616,13 @@ export default function AdminSettingsPage() {
       <Dialog open={deleteSpindleOpen} onOpenChange={setDeleteSpindleOpen}>
         <DialogContent className="bg-[#004851] border-4 border-red-500 text-white">
           <DialogHeader>
-            <DialogTitle className="text-red-500 text-xl font-bold">⚠️ Delete Entire Spindle</DialogTitle>
+            <DialogTitle className="text-red-500 text-xl font-bold"> Delete Entire Spindle</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="bg-red-900/20 border border-red-500 rounded-lg p-4">
               <p className="text-red-300 font-semibold mb-2">This action cannot be undone!</p>
               <p className="text-white">
-                This will permanently delete the spindle <span className="font-bold text-[#03BFB5]">"{spindleName}"</span> and 
+                This will permanently delete the spindle <span className="font-bold text-[#03BFB5]">&quot;{spindleName}&quot;</span> and 
                 <span className="font-bold text-red-400"> ALL {sortedSettings.length}</span> settings associated with it.
               </p>
             </div>
@@ -632,7 +632,7 @@ export default function AdminSettingsPage() {
                 To confirm deletion, type the spindle name exactly as shown:
               </Label>
               <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 mb-2">
-                <span className="text-[#03BFB5] font-bold text-lg">"{spindleName}"</span>
+                <span className="text-[#03BFB5] font-bold text-lg">&quot;{spindleName}&quot;</span>
               </div>
               <Input
                 id="spindle-name-confirm"
