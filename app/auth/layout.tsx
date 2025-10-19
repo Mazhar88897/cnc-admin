@@ -14,14 +14,7 @@ export default function Layout({
 }) {
   const router = useRouter();
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = sessionStorage.getItem('token');
-      if (token) {
-        router.replace('/dashboard');
-      }
-    }
-  }, [router]);
+
 
   return (
    
