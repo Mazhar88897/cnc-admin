@@ -181,6 +181,7 @@ export default function AdminMaterialsPage() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium">S/N</th>
                 <th className="text-left px-4 py-3 font-medium">Name</th>
+                <th className="text-left px-4 py-3 font-medium">ID</th>
                 <th className="text-right px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
@@ -189,6 +190,7 @@ export default function AdminMaterialsPage() {
                 <tr key={m.id} className="border-t">
                   <td className="px-4 py-3">{idx + 1}</td>
                   <td className="px-4 py-3 font-bold" >{m.name}</td>
+                  <td className="px-4 py-3">{m.id}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-4 justify-end">
                       <button aria-label="View" className="hover:opacity-80" onClick={() => handleView(m.id)}>

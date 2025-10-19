@@ -199,6 +199,7 @@ export default function AdminBitsPage() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium">S/N</th>
                 <th className="text-left px-4 py-3 font-medium">Name</th>
+                <th className="text-left px-4 py-3 font-medium">ID</th>
                 <th className="text-left px-4 py-3 font-medium">Bit Dia (mm)</th>
                 <th className="text-left px-4 py-3 font-medium">Stepover Ratio</th>
                 <th className="text-right px-4 py-3 font-medium">Actions</th>
@@ -209,6 +210,7 @@ export default function AdminBitsPage() {
                 <tr key={b.id} className="border-t">
                   <td className="px-4 py-3" onClick={() => goToSetting(b)}>{idx + 1}</td>
                   <td className="px-4 py-3 font-bold " >{b.name}</td>
+                  <td className="px-4 py-3">{b.id}</td>
                   <td className="px-4 py-3" onClick={() => goToSetting(b)}>{b.bit_dia_for_calc}</td>
                   <td className="px-4 py-3" onClick={() => goToSetting(b)}>{b.stepover_ratio}</td>
                   <td className="px-4 py-3">
